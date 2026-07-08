@@ -1,0 +1,153 @@
+@import 'tailwindcss';
+
+:root {
+  --traite-ink: #9c3a2b;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background: #f1f5f9;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ————————————————————————————————————————————————
+   Rendu du document (écran + impression)
+   ———————————————————————————————————————————————— */
+
+/* Données « imprimées » sur la traite : style machine à écrire bancaire */
+.traite-value {
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: 700;
+  color: #111827;
+}
+
+/* Typographie du squelette officiel */
+.traite-serif {
+  font-family: Georgia, 'Times New Roman', serif;
+}
+
+.traite-skeleton {
+  color: var(--traite-ink);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* Bandes guillochées (zones de sécurité violettes du document réel) */
+.hatch-strip {
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(129, 140, 248, 0.22) 0px,
+    rgba(129, 140, 248, 0.22) 1.2px,
+    transparent 1.2px,
+    transparent 4px
+  );
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* Bandeau d'en-tête orné */
+.guilloche {
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(156, 58, 43, 0.08) 0px,
+    rgba(156, 58, 43, 0.08) 2px,
+    transparent 2px,
+    transparent 6px
+  );
+  border-bottom: 1.5px solid currentColor;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* Lignes pointillées de saisie */
+.dotted-line {
+  border-bottom: 1.2px dotted var(--traite-ink);
+}
+
+/* ————————————————————————————————————————————————
+   MOTEUR D'IMPRESSION HAUTE PRÉCISION
+   Cible unique : #print-target-canvas (page A4 absolue)
+   ———————————————————————————————————————————————— */
+
+@page {
+  size: A4 portrait;
+  margin: 0;
+}
+
+@media print {
+  html,
+  body {
+    width: 210mm;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    overflow: visible !important;
+  }
+
+  /* Masque tout, puis ne révèle que le nœud d'aperçu explicite */
+  body * {
+    visibility: hidden;
+  }
+  #print-target-canvas,
+  #print-target-canvas * {
+    visibility: visible;
+  }
+
+  .no-print,
+  .screen-only {
+    display: none !important;
+  }
+
+  /* Neutralise la chaîne d'ancêtres (transform d'échelle écran, overflow,
+     flex) pour que le positionnement absolu se cale sur la page physique. */
+  .app-shell,
+  .app-main,
+  .preview-pane,
+  .preview-fit,
+  .preview-scale {
+    position: static !important;
+    display: block !important;
+    transform: none !important;
+    overflow: visible !important;
+    width: auto !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: none !important;
+  }
+
+  #print-target-canvas {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 210mm;
+    height: 297mm; /* Échelle absolue de la page A4 */
+    margin: 0;
+    padding: 0;
+    background: none !important;
+    box-shadow: none !important;
+    border: none !important;
+    --tw-ring-shadow: 0 0 #0000;
+  }
+
+  /* Condition Mode 1 : impression du cadre complet haute fidélité */
+  .mode-full-a4 {
+    display: block !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Condition Mode 2 : sur-impression sur papier physique */
+  .mode-overlay-physical {
+    display: block !important;
+  }
+  /* Le fond de repérage écran ne doit JAMAIS s'imprimer sur le papier officiel */
+  .mode-overlay-physical .preview-bg-image {
+    display: none !important;
+  }
+}
