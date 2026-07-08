@@ -14,6 +14,9 @@ function translateAuthError(message: string): string {
     'Password should be at least 6 characters': 'Le mot de passe doit contenir au moins 6 caractères.',
     'Signups not allowed for this instance': 'Les inscriptions sont désactivées sur cette instance.',
   };
+  if (message.toLowerCase().includes('rate limit')) {
+    return "Limite d'envoi d'emails atteinte côté Supabase. Désactivez « Confirm email » dans le dashboard (Authentication → Sign In / Up) pour une inscription directe sans email, puis réessayez.";
+  }
   return map[message] ?? message;
 }
 
@@ -24,6 +27,7 @@ export function AuthGate({ children }: AuthGateProps) {
   const [tab, setTab] = useState<'login' | 'signup'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [passwordConfirm, setPasswordConfirm] = useState('');
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
@@ -47,17 +51,29 @@ export function AuthGate({ children }: AuthGateProps) {
       setError('Renseignez un email valide et un mot de passe d’au moins 6 caractères.');
       return;
     }
+    if (tab === 'signup' && password !== passwordConfirm) {
+      setError('Les deux mots de passe ne correspondent pas.');
+      return;
+    }
     setPending(true);
     if (tab === 'login') {
       const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
       if (authError) setError(translateAuthError(authError.message));
     } else {
+      // Inscription directe : le compte est créé en base et, si la confirmation
+      // d'email est désactivée côté Supabase, une session est ouverte aussitôt
+      // (aucun email envoyé). Sinon on tente une connexion immédiate en repli.
       const { data, error: authError } = await supabase.auth.signUp({ email, password });
       if (authError) {
         setError(translateAuthError(authError.message));
       } else if (!data.session) {
-        setInfo('Compte créé. Vérifiez votre boîte mail pour confirmer votre adresse, puis connectez-vous.');
-        setTab('login');
+        const { error: loginError } = await supabase.auth.signInWithPassword({ email, password });
+        if (loginError) {
+          setInfo(
+            'Compte créé, mais la confirmation par email est encore exigée par Supabase. Désactivez « Confirm email » dans le dashboard (Authentication → Sign In / Up) pour une connexion immédiate.',
+          );
+          setTab('login');
+        }
       }
     }
     setPending(false);
@@ -110,6 +126,7 @@ export function AuthGate({ children }: AuthGateProps) {
                 setTab(key);
                 setError(null);
                 setInfo(null);
+                setPasswordConfirm('');
               }}
               className={`rounded-md py-2 transition ${
                 tab === key ? 'bg-white text-blue-700 shadow' : 'text-slate-500 hover:text-slate-700'
@@ -152,6 +169,34 @@ export function AuthGate({ children }: AuthGateProps) {
               required
             />
           </div>
+          {tab === 'signup' && (
+            <div>
+              <label
+                className="mb-1 block text-sm font-medium text-slate-700"
+                htmlFor="auth-password-confirm"
+              >
+                Confirmer le mot de passe
+              </label>
+              <input
+                id="auth-password-confirm"
+                type="password"
+                autoComplete="new-password"
+                className={`${inputClass} ${
+                  passwordConfirm && passwordConfirm !== password
+                    ? 'border-red-400 focus:border-red-500 focus:ring-red-200'
+                    : ''
+                }`}
+                value={passwordConfirm}
+                onChange={(e) => setPasswordConfirm(e.target.value)}
+                placeholder="••••••••"
+                minLength={6}
+                required
+              />
+              {passwordConfirm && passwordConfirm !== password && (
+                <p className="mt-1 text-xs text-red-600">Les mots de passe ne correspondent pas.</p>
+              )}
+            </div>
+          )}
 
           {error && (
             <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
