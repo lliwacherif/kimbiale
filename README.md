@@ -54,7 +54,7 @@ Si l'option **Confirm email** est activée dans _Authentication → Sign In / Up
 Dans la boîte de dialogue d'impression du navigateur (Chrome/Edge recommandés) :
 
 - **Mode 1 : papier A4**, orientation **Portrait**.
-- **Mode 2 : papier personnalisé 200 × 105 mm** (paysage). Créez ce format dans les propriétés du pilote si nécessaire.
+- **Mode 2 : A4 portrait**, comme le PDF de référence BoxyLab (MediaBox mesuré : 209,89 × 297,01 mm).
 - **Échelle : 100 %** — jamais « Ajuster à la page ».
 - **Marges : Aucune**.
 - **En-têtes et pieds de page : désactivés**.
@@ -62,15 +62,15 @@ Dans la boîte de dialogue d'impression du navigateur (Chrome/Edge recommandés)
 
 ### Mode 2 — papier officiel
 
-1. Dans les propriétés de l'imprimante, créez/sélectionnez le format exact **200 × 105 mm**, sans marges, à **100 % / Taille réelle**. Désactivez tout réglage « Ajuster », « Réduire » ou « Fit ».
+1. Sélectionnez **A4 portrait**, marges nulles, **100 % / Taille réelle**. Désactivez « Ajuster », « Réduire », les en-têtes et les pieds de page.
 2. Insérez la traite officielle dans le bac, bord d'attaque correctement orienté et calé sur le guide papier.
-3. Faites d'abord un **« Imprimer (test, sans enregistrer) »** sur une feuille blanche découpée à 200 × 105 mm ; superposez-la à la traite face à une source de lumière.
+3. Faites d'abord un **« Imprimer (test, sans enregistrer) »** sur une feuille A4 blanche ; superposez sa zone supérieure à la traite face à une source de lumière.
 4. Corrigez d'abord l'**échelle X** si l'espacement des chiffres RIB est trop court/long, puis l'échelle Y si les rangées se resserrent/s'écartent. Terminez par les décalages X/Y.
 
 ### Ajustements fins
 
 - Les décalages globaux sont exprimés en **mm** et les corrections d'échelle en **%**. L'échelle est mémorisée localement sur l'appareil.
-- Les positions individuelles des champs (en % de la zone traite) et les dimensions physiques (`LCN_WIDTH_MM` / `LCN_HEIGHT_MM`) sont centralisées dans **`src/lib/layout.ts`**.
+- Le mode physique utilise les coordonnées absolues en millimètres extraites du PDF de référence (`PHYSICAL_FIELDS_MM` dans **`src/lib/layout.ts`**). Les deux RIB sont imprimés en chaînes continues, comme dans ce PDF.
 
 ## Structure du projet
 

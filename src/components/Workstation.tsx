@@ -46,7 +46,7 @@ interface DeviceCalibration {
   scaleY: number;
 }
 
-const CALIBRATION_STORAGE_KEY = "kimbiale-lcn-calibration-v2";
+const CALIBRATION_STORAGE_KEY = "kimbiale-lcn-calibration-reference-v3";
 
 function loadDeviceCalibration(): DeviceCalibration {
   try {
@@ -201,8 +201,6 @@ export function Workstation({ session }: { session: Session }) {
       protestable: record.protestable,
     });
     setMode(record.print_method);
-    setOffsetX(Number(record.offset_x) || 0);
-    setOffsetY(Number(record.offset_y) || 0);
     setEditingId(record.id);
     setErrors({});
     setSaveError(null);
@@ -351,7 +349,7 @@ export function Workstation({ session }: { session: Session }) {
             <span className="font-medium">
               Aperçu avant impression —{" "}
               {mode === "OVERLAY_PHYSICAL"
-                ? "papier LCN réel (200 × 105 mm)"
+                ? "coordonnées du PDF de référence sur A4 (210 × 297 mm)"
                 : "A4 portrait (210 × 297 mm)"}
             </span>
             <span className="rounded-full bg-white px-3 py-1 font-semibold text-slate-600 shadow-sm ring-1 ring-slate-900/5">

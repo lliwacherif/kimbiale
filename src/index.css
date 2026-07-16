@@ -72,8 +72,7 @@ body {
 /* ————————————————————————————————————————————————
    MOTEUR D'IMPRESSION HAUTE PRÉCISION
    Cible unique : #print-target-canvas.
-   Le @page actif est injecté par PreviewCanvas :
-   A4 pour FULL_A4, 200 × 105 mm pour OVERLAY_PHYSICAL.
+   Les deux moteurs utilisent l'A4 portrait du PDF de référence.
    ———————————————————————————————————————————————— */
 
 @page {
@@ -146,15 +145,15 @@ body {
     print-color-adjust: exact;
   }
 
-  /* Condition Mode 2 : aucun conteneur A4, page physique exacte. */
+  /* Condition Mode 2 : coordonnées absolues sur la même page A4. */
   #print-target-canvas.mode-overlay-physical {
     display: block !important;
-    width: 200mm !important;
-    height: 105mm !important;
+    width: 210mm !important;
+    height: 297mm !important;
   }
   .mode-overlay-physical .traite-area {
-    width: 200mm !important;
-    height: 105mm !important;
+    width: 210mm !important;
+    height: 135.5mm !important;
   }
   /* Le fond de repérage écran ne doit JAMAIS s'imprimer sur le papier officiel */
   .mode-overlay-physical .preview-bg-image {

@@ -1,4 +1,3 @@
-import { useLayoutEffect } from "react";
 import { useFitScale } from "../hooks/useFitScale";
 import {
   A4_HEIGHT_MM,
@@ -7,9 +6,6 @@ import {
   A4_WIDTH_PX,
   FULL_TRAITE_HEIGHT_MM,
   FULL_TRAITE_WIDTH_MM,
-  LCN_HEIGHT_MM,
-  LCN_WIDTH_MM,
-  MM_TO_PX,
 } from "../lib/layout";
 import type { PrintMethod, TraiteData } from "../types";
 import { OverlayData } from "./OverlayData";
@@ -26,8 +22,8 @@ interface PreviewCanvasProps {
 
 /**
  * Canvas d'aperçu interactif = cible d'impression (`#print-target-canvas`).
- * Le mode complet produit une page A4. Le mode overlay produit directement
- * une page personnalisée 200 × 105 mm afin d'empêcher tout « fit to page ».
+ * Les deux modes produisent une page A4, comme le PDF de référence. En mode
+ * overlay, seul le calque de données de la zone supérieure est imprimé.
  */
 export function PreviewCanvas({
   data,
@@ -38,29 +34,13 @@ export function PreviewCanvas({
   scaleY,
 }: PreviewCanvasProps) {
   const isOverlay = mode === "OVERLAY_PHYSICAL";
-  const pageWidthMm = isOverlay ? LCN_WIDTH_MM : A4_WIDTH_MM;
-  const pageHeightMm = isOverlay ? LCN_HEIGHT_MM : A4_HEIGHT_MM;
-  const pageWidthPx = isOverlay ? LCN_WIDTH_MM * MM_TO_PX : A4_WIDTH_PX;
-  const pageHeightPx = isOverlay ? LCN_HEIGHT_MM * MM_TO_PX : A4_HEIGHT_PX;
-  const traiteWidthMm = isOverlay ? LCN_WIDTH_MM : FULL_TRAITE_WIDTH_MM;
-  const traiteHeightMm = isOverlay ? LCN_HEIGHT_MM : FULL_TRAITE_HEIGHT_MM;
-  const { ref, scale } = useFitScale<HTMLDivElement>(pageWidthPx + 4);
-
-  useLayoutEffect(() => {
-    const style = document.createElement("style");
-    style.id = "kimbiale-dynamic-page-size";
-    style.textContent = isOverlay
-      ? `@page { size: ${LCN_WIDTH_MM}mm ${LCN_HEIGHT_MM}mm; margin: 0; }`
-      : "@page { size: A4 portrait; margin: 0; }";
-    document.head.appendChild(style);
-    return () => style.remove();
-  }, [isOverlay]);
+  const { ref, scale } = useFitScale<HTMLDivElement>(A4_WIDTH_PX + 4);
 
   return (
     <div
       className="preview-fit relative w-full"
       ref={ref}
-      style={{ height: pageHeightPx * scale + (isOverlay ? 34 : 0) }}
+      style={{ height: A4_HEIGHT_PX * scale }}
     >
       <div
         className="preview-scale absolute left-0 top-0 origin-top-left"
@@ -71,14 +51,14 @@ export function PreviewCanvas({
           className={`relative bg-white shadow-2xl ring-1 ring-slate-900/10 ${
             isOverlay ? "mode-overlay-physical" : "mode-full-a4"
           }`}
-          style={{ width: `${pageWidthMm}mm`, height: `${pageHeightMm}mm` }}
+          style={{ width: `${A4_WIDTH_MM}mm`, height: `${A4_HEIGHT_MM}mm` }}
         >
-          {/* Le mode overlay occupe exactement toute la feuille 200 × 105 mm. */}
+          {/* Zone du papier officiel, ancrée sur la page A4 de référence. */}
           <div
             className="traite-area relative"
             style={{
-              width: `${traiteWidthMm}mm`,
-              height: `${traiteHeightMm}mm`,
+              width: `${FULL_TRAITE_WIDTH_MM}mm`,
+              height: `${FULL_TRAITE_HEIGHT_MM}mm`,
             }}
           >
             {isOverlay ? (
@@ -98,6 +78,7 @@ export function PreviewCanvas({
               dy={isOverlay ? offsetY : 0}
               scaleX={isOverlay ? scaleX : 100}
               scaleY={isOverlay ? scaleY : 100}
+              physical={isOverlay}
             />
 
             {isOverlay && (
@@ -111,10 +92,10 @@ export function PreviewCanvas({
         {isOverlay && (
           <p
             className="screen-only absolute whitespace-nowrap text-[11px] italic text-slate-500"
-            style={{ top: `${LCN_HEIGHT_MM + 3}mm`, left: "2mm" }}
+            style={{ top: `${FULL_TRAITE_HEIGHT_MM + 3}mm`, left: "2mm" }}
           >
-            Papier LCN réel : {LCN_WIDTH_MM} × {LCN_HEIGHT_MM} mm — le fond
-            repère ne s'imprime pas.
+            Repère visuel indicatif — l'impression suit les coordonnées du PDF
+            de référence A4 ; ce fond ne s'imprime pas.
           </p>
         )}
       </div>

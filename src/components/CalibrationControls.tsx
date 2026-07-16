@@ -94,10 +94,10 @@ export function CalibrationControls({
       </div>
 
       <div className="rounded-md border border-amber-200 bg-white/60 p-2 text-xs leading-relaxed text-amber-950">
-        <strong>Format imposé : 200 × 105 mm.</strong> Dans la fenêtre
-        d'impression, sélectionnez ce même format personnalisé,{" "}
+        <strong>Format imposé par le PDF de référence : A4 portrait.</strong>{" "}
+        Dans la fenêtre d'impression, sélectionnez A4,{" "}
         <strong>échelle 100 % / taille réelle</strong>, marges nulles, et
-        désactivez « Ajuster à la page ».
+        désactivez « Ajuster à la page », les en-têtes et les pieds de page.
       </div>
 
       <CalibrationRow

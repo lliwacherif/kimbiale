@@ -59,4 +59,4 @@ npm run preview    # tester le build en local
 1. Inscription directe avec double saisie du mot de passe + connexion.
 2. Saisie d'une traite → « Enregistrer & Imprimer » → vérifier la ligne dans l'historique (Supabase).
 3. Mode 1 : A4, échelle 100 %, marges « Aucune », graphiques d'arrière-plan activés.
-4. Mode 2 : format pilote personnalisé **200 × 105 mm**, 100 % / Taille réelle, aucune adaptation. Tester sur papier découpé avant le papier officiel, puis calibrer échelles X/Y et décalages X/Y (mm).
+4. Mode 2 : **A4 portrait**, 100 % / Taille réelle, marges nulles, en-têtes/pieds désactivés. Les champs reprennent les coordonnées millimétriques du PDF de référence ; tester sur A4 blanc avant le papier officiel.

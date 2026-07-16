@@ -3,8 +3,9 @@
  *
  * Toutes les positions de champs sont exprimées en POURCENTAGE de la zone
  * « traite » (calées sur le scan officiel `public/cambiale.png`, 1024×661 px).
- * Le mode complet conserve une page A4. Le mode de sur-impression utilise
- * strictement le format physique LCN 200 × 105 mm, sans conteneur A4.
+ * Les deux moteurs impriment sur une page A4. En sur-impression, les champs
+ * utilisent des coordonnées absolues en millimètres, mesurées dans le PDF de
+ * référence `Traite à Imprimer.pdf`.
  *
  * Si votre lot de papier LCN diffère légèrement, ajustez ici les constantes
  * (dimensions physiques et/ou coordonnées) — les curseurs Offset X/Y de
@@ -21,10 +22,6 @@ export const A4_HEIGHT_PX = A4_HEIGHT_MM * MM_TO_PX; // ≈ 1122.5
 /** Zone du dessin reconstitué en mode impression complète (sur A4). */
 export const FULL_TRAITE_WIDTH_MM = 210;
 export const FULL_TRAITE_HEIGHT_MM = 135.5;
-
-/** Dimensions mesurées du papier officiel de sur-impression. */
-export const LCN_WIDTH_MM = 200;
-export const LCN_HEIGHT_MM = 105;
 
 export interface FieldPos {
   /** % depuis la gauche de la zone traite */
@@ -127,3 +124,40 @@ export const FIELDS = {
 } satisfies Record<string, FieldPos>;
 
 export type FieldKey = keyof typeof FIELDS;
+
+export interface PhysicalFieldPos {
+  /** Position absolue depuis le bord gauche de la page A4. */
+  left: number;
+  /** Position absolue depuis le bord supérieur de la page A4. */
+  top: number;
+}
+
+/**
+ * Coordonnées effectives du générateur de référence BoxyLab, extraites du PDF
+ * A4 fourni (MediaBox 209,889 × 297,011 mm, police Arial 10,5 pt).
+ *
+ * Les RIB sont volontairement imprimés comme chaînes continues : le PDF de
+ * référence ne répartit pas les chiffres dans les cases du fond pré-imprimé.
+ */
+export const PHYSICAL_FIELDS_MM = {
+  echeanceTop: { left: 76.46, top: 16.49 },
+  villeTop: { left: 110.07, top: 11.46 },
+  dateEditionTop: { left: 110.07, top: 16.49 },
+  ribTop: { left: 92.6, top: 26.28 },
+  montantTop: { left: 153.19, top: 26.28 },
+  montantMid: { left: 153.19, top: 40.3 },
+  tireur: { left: 23.55, top: 38.19 },
+  ordreDe: { left: 69.32, top: 42.42 },
+  montantLettres: { left: 23.55, top: 49.3 },
+  lieuCreation: { left: 23.55, top: 58.56 },
+  dateCreation: { left: 52.65, top: 58.56 },
+  echeanceBottom: { left: 79.11, top: 58.56 },
+  monnaie: { left: 109.54, top: 65.17 },
+  ribBottom: { left: 43.66, top: 69.14 },
+  banque: { left: 137.32, top: 69.14 },
+  nomTire: { left: 96.31, top: 72.58 },
+  avalMention: { left: 60.06, top: 79.73 },
+  aval: { left: 60.06, top: 83.96 },
+  protestOui: { left: 110.6, top: 36.86 },
+  protestNon: { left: 104.3, top: 36.86 },
+} satisfies Record<string, PhysicalFieldPos>;
