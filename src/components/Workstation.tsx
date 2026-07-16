@@ -1,9 +1,9 @@
-import { useMemo, useState } from 'react';
-import type { Session } from '@supabase/supabase-js';
-import { supabase } from '../lib/supabase';
-import { parseMontant, todayIso } from '../lib/format';
-import { validateForm } from '../lib/validate';
-import { useCambialas } from '../hooks/useCambialas';
+import { useEffect, useMemo, useState } from "react";
+import type { Session } from "@supabase/supabase-js";
+import { supabase } from "../lib/supabase";
+import { parseMontant, todayIso } from "../lib/format";
+import { validateForm } from "../lib/validate";
+import { useCambialas } from "../hooks/useCambialas";
 import type {
   CambialaFormState,
   CambialaPayload,
@@ -11,48 +11,94 @@ import type {
   FormErrors,
   PrintMethod,
   TraiteData,
-} from '../types';
-import { CambialaForm } from './CambialaForm';
-import { ModeSelector } from './ModeSelector';
-import { CalibrationControls } from './CalibrationControls';
-import { HistoryLedger } from './HistoryLedger';
-import { PreviewCanvas } from './PreviewCanvas';
+} from "../types";
+import { CambialaForm } from "./CambialaForm";
+import { ModeSelector } from "./ModeSelector";
+import { CalibrationControls } from "./CalibrationControls";
+import { HistoryLedger } from "./HistoryLedger";
+import { PreviewCanvas } from "./PreviewCanvas";
 
 function defaultForm(): CambialaFormState {
   return {
-    date_echeance: '',
-    ville: '',
+    date_echeance: "",
+    ville: "",
     date_edition: todayIso(),
-    rib: '',
-    montant: '',
-    monnaie: 'DT',
-    a_lordre_de: '',
-    payeur: '',
-    aval: '',
-    banque: '',
+    rib: "",
+    montant: "",
+    monnaie: "DT",
+    a_lordre_de: "",
+    payeur: "",
+    aval: "",
+    banque: "",
     protestable: true,
   };
 }
 
 const MODE_LABELS: Record<PrintMethod, string> = {
-  FULL_A4: 'Impression complète — Page entière A4',
-  OVERLAY_PHYSICAL: 'Sur-impression — Papier officiel LCN',
+  FULL_A4: "Impression complète — Page entière A4",
+  OVERLAY_PHYSICAL: "Sur-impression — Papier officiel LCN",
 };
+
+interface DeviceCalibration {
+  offsetX: number;
+  offsetY: number;
+  scaleX: number;
+  scaleY: number;
+}
+
+const CALIBRATION_STORAGE_KEY = "kimbiale-lcn-calibration-v2";
+
+function loadDeviceCalibration(): DeviceCalibration {
+  try {
+    const saved = localStorage.getItem(CALIBRATION_STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved) as Partial<DeviceCalibration>;
+      return {
+        offsetX: Number(parsed.offsetX) || 0,
+        offsetY: Number(parsed.offsetY) || 0,
+        scaleX: Number(parsed.scaleX) || 100,
+        scaleY: Number(parsed.scaleY) || 100,
+      };
+    }
+  } catch {
+    // Stockage indisponible ou ancienne valeur invalide : valeurs neutres.
+  }
+  return { offsetX: 0, offsetY: 0, scaleX: 100, scaleY: 100 };
+}
 
 export function Workstation({ session }: { session: Session }) {
   const userId = session.user.id;
+  const initialCalibration = useMemo(loadDeviceCalibration, []);
 
   const [form, setForm] = useState<CambialaFormState>(defaultForm());
   const [errors, setErrors] = useState<FormErrors>({});
-  const [mode, setMode] = useState<PrintMethod>('FULL_A4');
-  const [offsetX, setOffsetX] = useState(0);
-  const [offsetY, setOffsetY] = useState(0);
+  const [mode, setMode] = useState<PrintMethod>("FULL_A4");
+  const [offsetX, setOffsetX] = useState(initialCalibration.offsetX);
+  const [offsetY, setOffsetY] = useState(initialCalibration.offsetY);
+  const [scaleX, setScaleX] = useState(initialCalibration.scaleX);
+  const [scaleY, setScaleY] = useState(initialCalibration.scaleY);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [acknowledged, setAcknowledged] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
   const { records, loading, error, refresh, save } = useCambialas(userId);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        CALIBRATION_STORAGE_KEY,
+        JSON.stringify({
+          offsetX,
+          offsetY,
+          scaleX,
+          scaleY,
+        } satisfies DeviceCalibration),
+      );
+    } catch {
+      // L'impression reste fonctionnelle même si le stockage local est bloqué.
+    }
+  }, [offsetX, offsetY, scaleX, scaleY]);
 
   const handleFieldChange = <K extends keyof CambialaFormState>(
     field: K,
@@ -74,7 +120,7 @@ export function Workstation({ session }: { session: Session }) {
       ville: form.ville.trim(),
       rib: form.rib,
       montant: parseMontant(form.montant),
-      monnaie: form.monnaie.trim().toUpperCase() || 'DT',
+      monnaie: form.monnaie.trim().toUpperCase() || "DT",
       aLordreDe: form.a_lordre_de.trim(),
       payeur: form.payeur.trim(),
       aval: form.aval.trim(),
@@ -88,7 +134,7 @@ export function Workstation({ session }: { session: Session }) {
     const nextErrors = validateForm(form);
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) {
-      setSaveError('Corrigez les champs signalés avant de continuer.');
+      setSaveError("Corrigez les champs signalés avant de continuer.");
       return false;
     }
     setSaveError(null);
@@ -119,8 +165,8 @@ export function Workstation({ session }: { session: Session }) {
       banque: form.banque.trim(),
       protestable: form.protestable,
       print_method: mode,
-      offset_x: mode === 'OVERLAY_PHYSICAL' ? offsetX : 0,
-      offset_y: mode === 'OVERLAY_PHYSICAL' ? offsetY : 0,
+      offset_x: mode === "OVERLAY_PHYSICAL" ? offsetX : 0,
+      offset_y: mode === "OVERLAY_PHYSICAL" ? offsetY : 0,
     };
 
     setSaving(true);
@@ -142,21 +188,21 @@ export function Workstation({ session }: { session: Session }) {
 
   const handleSelectRecord = (record: CambialaRecord) => {
     setForm({
-      date_echeance: record.date_echeance ?? '',
-      ville: record.ville ?? '',
-      date_edition: record.date_edition ?? '',
-      rib: record.rib ?? '',
+      date_echeance: record.date_echeance ?? "",
+      ville: record.ville ?? "",
+      date_edition: record.date_edition ?? "",
+      rib: record.rib ?? "",
       montant: Number(record.montant).toFixed(3),
-      monnaie: record.monnaie ?? 'DT',
-      a_lordre_de: record.a_lordre_de ?? '',
-      payeur: record.payeur ?? '',
-      aval: record.aval ?? '',
-      banque: record.banque ?? '',
+      monnaie: record.monnaie ?? "DT",
+      a_lordre_de: record.a_lordre_de ?? "",
+      payeur: record.payeur ?? "",
+      aval: record.aval ?? "",
+      banque: record.banque ?? "",
       protestable: record.protestable,
     });
     setMode(record.print_method);
-    setOffsetX(Math.round(Number(record.offset_x) || 0));
-    setOffsetY(Math.round(Number(record.offset_y) || 0));
+    setOffsetX(Number(record.offset_x) || 0);
+    setOffsetY(Number(record.offset_y) || 0);
     setEditingId(record.id);
     setErrors({});
     setSaveError(null);
@@ -167,8 +213,6 @@ export function Workstation({ session }: { session: Session }) {
     setEditingId(null);
     setErrors({});
     setSaveError(null);
-    setOffsetX(0);
-    setOffsetY(0);
   };
 
   return (
@@ -189,7 +233,9 @@ export function Workstation({ session }: { session: Session }) {
           </div>
         </div>
         <div className="flex items-center gap-3 text-sm">
-          <span className="hidden text-slate-500 sm:inline">{session.user.email}</span>
+          <span className="hidden text-slate-500 sm:inline">
+            {session.user.email}
+          </span>
           <button
             type="button"
             onClick={() => supabase.auth.signOut()}
@@ -203,26 +249,35 @@ export function Workstation({ session }: { session: Session }) {
       <div className="app-main flex flex-1 flex-col overflow-hidden lg:flex-row">
         {/* ——— Panneau gauche : formulaire & historique ——— */}
         <aside className="no-print w-full shrink-0 space-y-5 overflow-y-auto border-r border-slate-200 bg-white p-5 lg:w-[440px]">
-          <CambialaForm form={form} errors={errors} onChange={handleFieldChange} />
+          <CambialaForm
+            form={form}
+            errors={errors}
+            onChange={handleFieldChange}
+          />
 
           <hr className="border-slate-100" />
 
           <ModeSelector mode={mode} onChange={setMode} />
 
-          {mode === 'OVERLAY_PHYSICAL' && (
+          {mode === "OVERLAY_PHYSICAL" && (
             <CalibrationControls
               offsetX={offsetX}
               offsetY={offsetY}
+              scaleX={scaleX}
+              scaleY={scaleY}
               onChangeX={setOffsetX}
               onChangeY={setOffsetY}
+              onChangeScaleX={setScaleX}
+              onChangeScaleY={setScaleY}
             />
           )}
 
           {/* ——— Avertissement de responsabilité ——— */}
           <div className="border-l-4 border-red-600 bg-slate-100 p-3 text-xs leading-relaxed text-slate-600">
-            Les utilisateurs assument l'entière responsabilité du contenu imprimé. Il est impératif
-            de contrôler visuellement vos traites avant de les signer. Nous n'assumons aucune
-            responsabilité pour ce service gratuit mis à la disposition de nos partenaires
+            Les utilisateurs assument l'entière responsabilité du contenu
+            imprimé. Il est impératif de contrôler visuellement vos traites
+            avant de les signer. Nous n'assumons aucune responsabilité pour ce
+            service gratuit mis à la disposition de nos partenaires
             gracieusement.
           </div>
           <label className="flex cursor-pointer items-start gap-2 text-sm text-slate-700">
@@ -232,7 +287,10 @@ export function Workstation({ session }: { session: Session }) {
               checked={acknowledged}
               onChange={(e) => setAcknowledged(e.target.checked)}
             />
-            <span>Je reconnais que je suis le seul responsable de l'impression de la traite</span>
+            <span>
+              Je reconnais que je suis le seul responsable de l'impression de la
+              traite
+            </span>
           </label>
 
           {/* ——— Banc d'actions ——— */}
@@ -249,10 +307,10 @@ export function Workstation({ session }: { session: Session }) {
               className="w-full rounded-lg bg-blue-600 py-2.5 font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {saving
-                ? 'Enregistrement…'
+                ? "Enregistrement…"
                 : editingId
-                  ? 'Mettre à jour & Imprimer'
-                  : 'Enregistrer & Imprimer'}
+                  ? "Mettre à jour & Imprimer"
+                  : "Enregistrer & Imprimer"}
             </button>
             <div className="flex gap-2">
               <button
@@ -291,13 +349,23 @@ export function Workstation({ session }: { session: Session }) {
         <main className="preview-pane flex-1 overflow-auto bg-slate-200/80 p-6">
           <div className="no-print mb-3 flex items-center justify-between text-xs text-slate-500">
             <span className="font-medium">
-              Aperçu avant impression — A4 portrait (210 × 297 mm)
+              Aperçu avant impression —{" "}
+              {mode === "OVERLAY_PHYSICAL"
+                ? "papier LCN réel (200 × 105 mm)"
+                : "A4 portrait (210 × 297 mm)"}
             </span>
             <span className="rounded-full bg-white px-3 py-1 font-semibold text-slate-600 shadow-sm ring-1 ring-slate-900/5">
               {MODE_LABELS[mode]}
             </span>
           </div>
-          <PreviewCanvas data={traiteData} mode={mode} offsetX={offsetX} offsetY={offsetY} />
+          <PreviewCanvas
+            data={traiteData}
+            mode={mode}
+            offsetX={offsetX}
+            offsetY={offsetY}
+            scaleX={scaleX}
+            scaleY={scaleY}
+          />
         </main>
       </div>
     </div>

@@ -4,12 +4,12 @@ Application web complète pour générer, enregistrer et imprimer des lettres de
 
 ## Stack technique
 
-| Couche | Technologie |
-| --- | --- |
-| Frontend | React 19 + TypeScript (Vite) |
-| Styles | Tailwind CSS v4 + CSS `@media print` dédié |
-| Backend / BDD | Supabase (Auth email/mot de passe + PostgreSQL avec RLS) |
-| Impression | Fenêtre d'impression native du navigateur, page A4 absolue (210 × 297 mm) |
+| Couche        | Technologie                                                               |
+| ------------- | ------------------------------------------------------------------------- |
+| Frontend      | React 19 + TypeScript (Vite)                                              |
+| Styles        | Tailwind CSS v4 + CSS `@media print` dédié                                |
+| Backend / BDD | Supabase (Auth email/mot de passe + PostgreSQL avec RLS)                  |
+| Impression    | Fenêtre d'impression native du navigateur, page A4 absolue (210 × 297 mm) |
 
 ## Installation
 
@@ -36,7 +36,7 @@ Le script provisionne : l'enum `print_method_type`, la table `public.cambialas`,
 
 ### Confirmation d'email
 
-Si l'option **Confirm email** est activée dans *Authentication → Sign In / Up* de votre projet Supabase, les nouveaux inscrits devront cliquer le lien reçu par email avant de pouvoir se connecter (l'application affiche le message adéquat). Désactivez cette option pour une connexion immédiate après inscription.
+Si l'option **Confirm email** est activée dans _Authentication → Sign In / Up_ de votre projet Supabase, les nouveaux inscrits devront cliquer le lien reçu par email avant de pouvoir se connecter (l'application affiche le message adéquat). Désactivez cette option pour une connexion immédiate après inscription.
 
 ## Utilisation
 
@@ -44,8 +44,8 @@ Si l'option **Confirm email** est activée dans *Authentication → Sign In / Up
 2. **Panneau gauche** : saisissez les champs de la traite (RIB à 20 chiffres contrôlé, montant à 3 décimales, etc.).
 3. **Méthode d'impression** :
    - **Mode 1 — Impression Complète (Page Entière A4)** : imprime le document entier (cadre bilingue FR/AR reconstitué en CSS + données) sur une feuille A4 vierge.
-   - **Mode 2 — Sur-impression sur Papier Officiel (LCN)** : imprime *uniquement les données*, positionnées pour tomber dans les cases de votre traite pré-imprimée. Le fond affiché à l'écran (opacité réduite) sert de repère et **n'est jamais imprimé**.
-4. **Calibrage (Mode 2)** : les curseurs *Offset X / Offset Y* (−20 px → +20 px) décalent l'ensemble des champs en temps réel pour compenser les marges matérielles de votre imprimante.
+   - **Mode 2 — Sur-impression sur Papier Officiel (LCN)** : imprime _uniquement les données_, positionnées pour tomber dans les cases de votre traite pré-imprimée. Le fond affiché à l'écran (opacité réduite) sert de repère et **n'est jamais imprimé**.
+4. **Calibrage (Mode 2)** : les décalages X/Y sont réglés en millimètres. Les échelles X/Y (90–110 %) corrigent séparément un espacement horizontal ou vertical comprimé par le pilote d'impression.
 5. **Enregistrer & Imprimer** : enregistre la traite dans Supabase sous votre session puis ouvre l'impression native.
 6. **Historique** : cliquez sur une ligne pour recharger la traite dans le formulaire (relecture, modification, réimpression). Le badge indique le moteur utilisé (`FULL_A4` / `OVERLAY_PHYSICAL`).
 
@@ -53,7 +53,8 @@ Si l'option **Confirm email** est activée dans *Authentication → Sign In / Up
 
 Dans la boîte de dialogue d'impression du navigateur (Chrome/Edge recommandés) :
 
-- **Papier : A4**, orientation **Portrait**.
+- **Mode 1 : papier A4**, orientation **Portrait**.
+- **Mode 2 : papier personnalisé 200 × 105 mm** (paysage). Créez ce format dans les propriétés du pilote si nécessaire.
 - **Échelle : 100 %** — jamais « Ajuster à la page ».
 - **Marges : Aucune**.
 - **En-têtes et pieds de page : désactivés**.
@@ -61,14 +62,15 @@ Dans la boîte de dialogue d'impression du navigateur (Chrome/Edge recommandés)
 
 ### Mode 2 — papier officiel
 
-1. Insérez la traite officielle dans le bac de sorte qu'elle soit saisie **bord haut en premier**, calée sur le côté d'alimentation (la zone imprimable est ancrée au coin supérieur gauche de la page A4).
-2. Faites d'abord un **« Imprimer (test, sans enregistrer) »** sur une feuille A4 blanche ; superposez-la à la traite face à une source de lumière.
-3. Corrigez avec les curseurs *Offset X/Y* puis relancez.
+1. Dans les propriétés de l'imprimante, créez/sélectionnez le format exact **200 × 105 mm**, sans marges, à **100 % / Taille réelle**. Désactivez tout réglage « Ajuster », « Réduire » ou « Fit ».
+2. Insérez la traite officielle dans le bac, bord d'attaque correctement orienté et calé sur le guide papier.
+3. Faites d'abord un **« Imprimer (test, sans enregistrer) »** sur une feuille blanche découpée à 200 × 105 mm ; superposez-la à la traite face à une source de lumière.
+4. Corrigez d'abord l'**échelle X** si l'espacement des chiffres RIB est trop court/long, puis l'échelle Y si les rangées se resserrent/s'écartent. Terminez par les décalages X/Y.
 
 ### Ajustements fins
 
-- Les décalages globaux se règlent avec les curseurs.
-- Les positions individuelles des champs (en % de la zone traite) et les dimensions physiques du papier (`TRAITE_WIDTH_MM` / `TRAITE_HEIGHT_MM`) se règlent dans **`src/lib/layout.ts`** si votre lot de papier diffère du gabarit scanné (`public/cambiale.png`).
+- Les décalages globaux sont exprimés en **mm** et les corrections d'échelle en **%**. L'échelle est mémorisée localement sur l'appareil.
+- Les positions individuelles des champs (en % de la zone traite) et les dimensions physiques (`LCN_WIDTH_MM` / `LCN_HEIGHT_MM`) sont centralisées dans **`src/lib/layout.ts`**.
 
 ## Structure du projet
 

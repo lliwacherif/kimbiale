@@ -1,4 +1,4 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 :root {
   --traite-ink: #9c3a2b;
@@ -21,14 +21,14 @@ body {
 
 /* Données « imprimées » sur la traite : style machine à écrire bancaire */
 .traite-value {
-  font-family: 'Courier New', Courier, monospace;
+  font-family: "Courier New", Courier, monospace;
   font-weight: 700;
   color: #111827;
 }
 
 /* Typographie du squelette officiel */
 .traite-serif {
-  font-family: Georgia, 'Times New Roman', serif;
+  font-family: Georgia, "Times New Roman", serif;
 }
 
 .traite-skeleton {
@@ -71,7 +71,9 @@ body {
 
 /* ————————————————————————————————————————————————
    MOTEUR D'IMPRESSION HAUTE PRÉCISION
-   Cible unique : #print-target-canvas (page A4 absolue)
+   Cible unique : #print-target-canvas.
+   Le @page actif est injecté par PreviewCanvas :
+   A4 pour FULL_A4, 200 × 105 mm pour OVERLAY_PHYSICAL.
    ———————————————————————————————————————————————— */
 
 @page {
@@ -82,7 +84,8 @@ body {
 @media print {
   html,
   body {
-    width: 210mm;
+    width: auto !important;
+    height: auto !important;
     margin: 0 !important;
     padding: 0 !important;
     background: #fff !important;
@@ -125,26 +128,33 @@ body {
     position: absolute;
     left: 0;
     top: 0;
-    width: 210mm;
-    height: 297mm; /* Échelle absolue de la page A4 */
     margin: 0;
     padding: 0;
     background: none !important;
     box-shadow: none !important;
     border: none !important;
+    overflow: hidden !important;
     --tw-ring-shadow: 0 0 #0000;
   }
 
   /* Condition Mode 1 : impression du cadre complet haute fidélité */
-  .mode-full-a4 {
+  #print-target-canvas.mode-full-a4 {
     display: block !important;
+    width: 210mm !important;
+    height: 297mm !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
 
-  /* Condition Mode 2 : sur-impression sur papier physique */
-  .mode-overlay-physical {
+  /* Condition Mode 2 : aucun conteneur A4, page physique exacte. */
+  #print-target-canvas.mode-overlay-physical {
     display: block !important;
+    width: 200mm !important;
+    height: 105mm !important;
+  }
+  .mode-overlay-physical .traite-area {
+    width: 200mm !important;
+    height: 105mm !important;
   }
   /* Le fond de repérage écran ne doit JAMAIS s'imprimer sur le papier officiel */
   .mode-overlay-physical .preview-bg-image {

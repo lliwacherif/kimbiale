@@ -5,14 +5,14 @@ Générateur de Lettre de Change tunisienne (Cambiala / Traite).
 
 ## Spécifications
 
-| | |
-| --- | --- |
-| Type | SPA statique (aucun serveur backend à héberger) |
-| Frontend | React 19 + TypeScript, Vite 8 |
-| Styles | Tailwind CSS 4 (plugin `@tailwindcss/vite`) + CSS `@media print` |
-| Backend | Supabase (Auth email/mot de passe + PostgreSQL avec RLS) |
-| Node requis | ≥ 20.19 (build) |
-| Sortie de build | dossier `dist/` |
+|                 |                                                                  |
+| --------------- | ---------------------------------------------------------------- |
+| Type            | SPA statique (aucun serveur backend à héberger)                  |
+| Frontend        | React 19 + TypeScript, Vite 8                                    |
+| Styles          | Tailwind CSS 4 (plugin `@tailwindcss/vite`) + CSS `@media print` |
+| Backend         | Supabase (Auth email/mot de passe + PostgreSQL avec RLS)         |
+| Node requis     | ≥ 20.19 (build)                                                  |
+| Sortie de build | dossier `dist/`                                                  |
 
 ## Variables d'environnement
 
@@ -24,6 +24,7 @@ VITE_SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmF
 ```
 
 Notes :
+
 - Clé **anon publique** (prévue pour le client, protégée par RLS) — pas un secret.
 - Le fichier `.env` du repo contient déjà ces valeurs ; un repli codé en dur existe dans `src/lib/supabase.ts`.
 - Ne jamais exposer la clé `service_role` côté client.
@@ -38,11 +39,11 @@ npm run preview    # tester le build en local
 
 ## Hébergement (Vercel / Netlify / Cloudflare Pages…)
 
-| Paramètre | Valeur |
-| --- | --- |
-| Build command | `npm run build` |
-| Output directory | `dist` |
-| Framework preset | Vite |
+| Paramètre        | Valeur          |
+| ---------------- | --------------- |
+| Build command    | `npm run build` |
+| Output directory | `dist`          |
+| Framework preset | Vite            |
 
 - Application mono-page sans routeur : aucune règle de réécriture SPA indispensable (mais `/* → /index.html` ne nuit pas).
 - Assets requis servis depuis `public/` : `cambiale.png` (gabarit LCN), `CherifCorp Logo.png`, `favicon.svg`.
@@ -50,12 +51,12 @@ npm run preview    # tester le build en local
 ## Supabase (déjà provisionné)
 
 - Projet : `pxufxatfecpxnhkhgxpj` — table `public.cambialas` + enum `print_method_type` + politiques RLS + trigger `updated_at` **déjà en place** (script de référence : `supabase/schema.sql`).
-- Auth : inscriptions ouvertes, **confirmation d'email activée** (les nouveaux comptes doivent cliquer le lien reçu). Modifiable dans *Authentication → Sign In / Up → Confirm email*.
-- Après mise en ligne, ajouter l'URL de production dans *Authentication → URL Configuration* (Site URL + Redirect URLs) pour que les liens de confirmation redirigent correctement.
+- Auth : inscriptions email/mot de passe ouvertes. Pour l'inscription directe sans email, **Confirm email doit être désactivé** dans _Authentication → Sign In / Up → Email_.
+- Après mise en ligne, ajouter l'URL de production dans _Authentication → URL Configuration_ (Site URL + Redirect URLs) pour que les liens de confirmation redirigent correctement.
 
 ## Checklist post-déploiement
 
-1. Inscription + confirmation email + connexion.
+1. Inscription directe avec double saisie du mot de passe + connexion.
 2. Saisie d'une traite → « Enregistrer & Imprimer » → vérifier la ligne dans l'historique (Supabase).
-3. Impression : A4, échelle 100 %, marges « Aucune », graphiques d'arrière-plan activés (Mode 1).
-4. Mode 2 (papier officiel LCN) : test sur feuille blanche + calibrage Offset X/Y avant impression réelle.
+3. Mode 1 : A4, échelle 100 %, marges « Aucune », graphiques d'arrière-plan activés.
+4. Mode 2 : format pilote personnalisé **200 × 105 mm**, 100 % / Taille réelle, aucune adaptation. Tester sur papier découpé avant le papier officiel, puis calibrer échelles X/Y et décalages X/Y (mm).
