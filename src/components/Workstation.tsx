@@ -44,6 +44,7 @@ interface DeviceCalibration {
   offsetY: number;
   scaleX: number;
   scaleY: number;
+  boldText: boolean;
 }
 
 const CALIBRATION_STORAGE_KEY = "kimbiale-lcn-calibration-reference-v3";
@@ -58,12 +59,19 @@ function loadDeviceCalibration(): DeviceCalibration {
         offsetY: Number(parsed.offsetY) || 0,
         scaleX: Number(parsed.scaleX) || 100,
         scaleY: Number(parsed.scaleY) || 100,
+        boldText: parsed.boldText !== false,
       };
     }
   } catch {
     // Stockage indisponible ou ancienne valeur invalide : valeurs neutres.
   }
-  return { offsetX: 0, offsetY: 0, scaleX: 100, scaleY: 100 };
+  return {
+    offsetX: 0,
+    offsetY: 0,
+    scaleX: 100,
+    scaleY: 100,
+    boldText: true,
+  };
 }
 
 export function Workstation({ session }: { session: Session }) {
@@ -77,6 +85,7 @@ export function Workstation({ session }: { session: Session }) {
   const [offsetY, setOffsetY] = useState(initialCalibration.offsetY);
   const [scaleX, setScaleX] = useState(initialCalibration.scaleX);
   const [scaleY, setScaleY] = useState(initialCalibration.scaleY);
+  const [boldText, setBoldText] = useState(initialCalibration.boldText);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [acknowledged, setAcknowledged] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -93,12 +102,13 @@ export function Workstation({ session }: { session: Session }) {
           offsetY,
           scaleX,
           scaleY,
+          boldText,
         } satisfies DeviceCalibration),
       );
     } catch {
       // L'impression reste fonctionnelle même si le stockage local est bloqué.
     }
-  }, [offsetX, offsetY, scaleX, scaleY]);
+  }, [offsetX, offsetY, scaleX, scaleY, boldText]);
 
   const handleFieldChange = <K extends keyof CambialaFormState>(
     field: K,
@@ -263,10 +273,12 @@ export function Workstation({ session }: { session: Session }) {
               offsetY={offsetY}
               scaleX={scaleX}
               scaleY={scaleY}
+              boldText={boldText}
               onChangeX={setOffsetX}
               onChangeY={setOffsetY}
               onChangeScaleX={setScaleX}
               onChangeScaleY={setScaleY}
+              onChangeBoldText={setBoldText}
             />
           )}
 
@@ -363,6 +375,7 @@ export function Workstation({ session }: { session: Session }) {
             offsetY={offsetY}
             scaleX={scaleX}
             scaleY={scaleY}
+            boldText={boldText}
           />
         </main>
       </div>

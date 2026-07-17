@@ -17,6 +17,7 @@ interface OverlayDataProps {
   scaleX?: number;
   scaleY?: number;
   physical?: boolean;
+  boldText?: boolean;
 }
 
 function fieldStyle(pos: FieldPos): CSSProperties {
@@ -79,7 +80,7 @@ function RibCells({
 function PhysicalField({
   pos,
   children,
-  bold = false,
+  bold,
   color = "#000",
   fontSize = 10.5,
 }: {
@@ -100,7 +101,7 @@ function PhysicalField({
         color,
         fontFamily: "Arial, Helvetica, sans-serif",
         fontSize: `${fontSize}pt`,
-        fontWeight: bold ? 700 : 400,
+        fontWeight: bold === undefined ? "inherit" : bold ? 700 : 400,
         lineHeight: 1,
       }}
     >
@@ -216,6 +217,7 @@ export function OverlayData({
   scaleX = 100,
   scaleY = 100,
   physical = false,
+  boldText = true,
 }: OverlayDataProps) {
   const rib = splitRib(data.rib);
   const montantStr =
@@ -235,6 +237,7 @@ export function OverlayData({
       style={{
         transform: `translate(${dx}mm, ${dy}mm) scale(${scaleX / 100}, ${scaleY / 100})`,
         transformOrigin: "0 0",
+        fontWeight: physical && boldText ? 700 : 400,
       }}
     >
       {physical ? (

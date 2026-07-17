@@ -18,6 +18,7 @@ interface PreviewCanvasProps {
   offsetY: number;
   scaleX: number;
   scaleY: number;
+  boldText: boolean;
 }
 
 /**
@@ -32,6 +33,7 @@ export function PreviewCanvas({
   offsetY,
   scaleX,
   scaleY,
+  boldText,
 }: PreviewCanvasProps) {
   const isOverlay = mode === "OVERLAY_PHYSICAL";
   const { ref, scale } = useFitScale<HTMLDivElement>(A4_WIDTH_PX + 4);
@@ -79,6 +81,7 @@ export function PreviewCanvas({
               scaleX={isOverlay ? scaleX : 100}
               scaleY={isOverlay ? scaleY : 100}
               physical={isOverlay}
+              boldText={boldText}
             />
 
             {isOverlay && (

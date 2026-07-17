@@ -3,10 +3,12 @@ interface CalibrationControlsProps {
   offsetY: number;
   scaleX: number;
   scaleY: number;
+  boldText: boolean;
   onChangeX: (value: number) => void;
   onChangeY: (value: number) => void;
   onChangeScaleX: (value: number) => void;
   onChangeScaleY: (value: number) => void;
+  onChangeBoldText: (value: boolean) => void;
 }
 
 interface CalibrationRowProps {
@@ -68,10 +70,12 @@ export function CalibrationControls({
   offsetY,
   scaleX,
   scaleY,
+  boldText,
   onChangeX,
   onChangeY,
   onChangeScaleX,
   onChangeScaleY,
+  onChangeBoldText,
 }: CalibrationControlsProps) {
   return (
     <div className="space-y-3 rounded-lg border border-amber-300 bg-amber-50 p-3">
@@ -86,12 +90,23 @@ export function CalibrationControls({
             onChangeY(0);
             onChangeScaleX(100);
             onChangeScaleY(100);
+            onChangeBoldText(true);
           }}
           className="rounded border border-amber-400 px-2 py-0.5 text-xs text-amber-800 transition hover:bg-amber-100"
         >
           Réinitialiser
         </button>
       </div>
+
+      <label className="flex cursor-pointer items-center justify-between rounded-md border border-amber-200 bg-white/60 px-2.5 py-2 text-sm font-medium text-amber-950">
+        <span>Texte en gras</span>
+        <input
+          type="checkbox"
+          checked={boldText}
+          onChange={(event) => onChangeBoldText(event.target.checked)}
+          className="h-4 w-4 accent-amber-600"
+        />
+      </label>
 
       <div className="rounded-md border border-amber-200 bg-white/60 p-2 text-xs leading-relaxed text-amber-950">
         <strong>Format imposé par le PDF de référence : A4 portrait.</strong>{" "}

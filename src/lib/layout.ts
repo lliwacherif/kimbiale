@@ -158,6 +158,7 @@ export const PHYSICAL_FIELDS_MM = {
   nomTire: { left: 96.31, top: 72.58 },
   avalMention: { left: 60.06, top: 79.73 },
   aval: { left: 60.06, top: 83.96 },
-  protestOui: { left: 110.6, top: 36.86 },
-  protestNon: { left: 104.3, top: 36.86 },
+  // Le stock physique place les cases ~3,5 mm à gauche du PDF de référence.
+  protestOui: { left: 107.1, top: 36.86 },
+  protestNon: { left: 100.8, top: 36.86 },
 } satisfies Record<string, PhysicalFieldPos>;
